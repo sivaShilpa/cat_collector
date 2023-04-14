@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import Cat
+from .models import Cat, Toy
 from .forms import FeedingForm
 # views.py
 
@@ -25,12 +25,14 @@ def cats_index(request):
 
 def cats_detail(request, cat_id):
   cat = Cat.objects.get(id=cat_id)
+  id_list = cat.toys.all().values_list('id')
+  toys_cat_doesnt_have = Toy.objects.exclude(id__in=id_list)
   feeding_form = FeedingForm()
-  return render(request, 'cats/detail.html', { 'cat': cat, 'feeding_form': feeding_form})
+  return render(request, 'cats/detail.html', { 'cat': cat, 'feeding_form': feeding_form, 'toys': toys_cat_doesnt_have})
 
 class CatCreate(CreateView):
   model = Cat
-  fields = '__all__'
+  fields = ['name', 'breed', 'description', 'age']
   # Special string pattern Django will use
   # success_url = '/cats/{cat_id}' <- what it may look like under hood
   # Or if you wanted to redirect to the index page
@@ -59,6 +61,12 @@ def add_feeding(request, cat_id):
     new_feeding.cat_id = cat_id
     new_feeding.save()
   return redirect('detail', cat_id=cat_id)
+
+def assoc_toy(request, cat_id, toy_id):
+  # Note that you can pass a toy's id instead of the whole toy object
+  Cat.objects.get(id=cat_id).toys.add(toy_id)
+  return redirect('detail', cat_id=cat_id)
+
 
 
 

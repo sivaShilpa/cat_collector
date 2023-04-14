@@ -7,3 +7,5 @@ class FeedingForm(ModelForm):
   class Meta:
     model = Feeding
     fields = ['date', 'meal']
+
+
